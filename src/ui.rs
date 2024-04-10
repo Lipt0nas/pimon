@@ -1,5 +1,5 @@
 use crate::util::{self, App};
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::DateTime;
 use std::str::FromStr;
 use tui::{
     backend::Backend,
@@ -216,8 +216,7 @@ where
             let queries_over_time_rows: Vec<(String, u64)> = squashed_queries_over_time
                 .iter()
                 .map(|(timestamp, count)| {
-                    let naive = NaiveDateTime::from_timestamp(*timestamp, 0);
-                    let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
+                    let datetime = DateTime::from_timestamp(*timestamp, 0).unwrap_or_default();
                     (datetime.format("%H:%M").to_string(), *count)
                 })
                 .collect();

@@ -1,6 +1,6 @@
 use pi_hole_api::{
     api_types::{OverTimeData, Summary, TopClients, TopItems},
-    AuthenticatedPiHoleAPI, PiHoleAPIConfig, PiHoleAPIConfigWithKey, UnauthenticatedPiHoleAPI,
+    AuthenticatedPiHoleAPI, PiHoleAPIConfig, PiHoleAPIConfigWithKey,
 };
 use serde::Deserialize;
 use serde_json;
@@ -32,13 +32,6 @@ impl PiHoleConfigImplementation {
             }
             None => PiHoleConfigImplementation::Default(PiHoleAPIConfig::new(host)),
         }
-    }
-
-    pub fn get_unauthenticated_api(&self) -> Option<&dyn UnauthenticatedPiHoleAPI> {
-        Some(match self {
-            Self::Default(config) => config,
-            Self::WithKey(config) => config,
-        })
     }
 
     pub fn get_authenticated_api(&self) -> Option<&dyn AuthenticatedPiHoleAPI> {
@@ -261,16 +254,16 @@ fn background_update(tx: mpsc::Sender<Option<PiHoleData>>, host: String, api_key
 
     tx.send(Some(PiHoleData {
         summary: api_config
-            .get_unauthenticated_api()
+            .get_authenticated_api()
             .and_then(|api| api.get_summary().ok()),
         top_sources: api_config
             .get_authenticated_api()
-            .and_then(|api| api.get_top_clients(Some(25)).ok()),
+            .and_then(|api| api.get_top_clients(&Some(25)).ok()),
         top_items: api_config
             .get_authenticated_api()
-            .and_then(|api| api.get_top_items(Some(25)).ok()),
+            .and_then(|api| api.get_top_items(&Some(25)).ok()),
         over_time_data: api_config
-            .get_unauthenticated_api()
+            .get_authenticated_api()
             .and_then(|api| api.get_over_time_data_10_mins().ok()),
     }))
     .unwrap();
